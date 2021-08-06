@@ -1,0 +1,83 @@
+{% extends 'base/base.html' %} {% block body %}
+{% load static %}
+{% load url_replace %}
+
+{% if listprofile %}
+<div class="container mt-5">
+    <div>
+        {% for profile in listprofile %}
+        <a  {% if user.is_authenticated %}
+        {% if profile.user == user %}
+        href="{% url 'register:profile'%}"
+        {% else %}
+        href="{% url 'register:profiledetail' profile.id %}"
+        {% endif %}
+        {% else %}
+        href="{% url 'register:profiledetail' profile.id %}"
+        {% endif %} class="text-dark text-decoration-none">
+            <div class="d-flex mb-5">
+                <div>
+                    <div class="avatar" style="width:80px; height:80px">
+                        {% if profile.avatar %}
+                        <img src="{{profile.avatar.url}}" alt="" style="width:100%;height:100%; border-radius:50%"> {% endif %}
+                    </div>
+                </div>
+                <div class="ms-3">
+                    <p style="margin: 0; color:orangered; font-weight:400"> {{profile.name}}</p>
+                    <p style="margin: 0;">{{profile.Affiliation}}</p>
+                    {% if profile.EmailForVerification %}
+                    <p style="margin: 0;">{{profile.EmailForVerification}}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    <div class="d-flex w-100 justify-content-center mt-5 mb-5">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% if listprofile.has_previous %}
+                <li class="page-item"><a class="page-link"  href="?{% url_replace page=listprofile.previous_page_number %}" style="color:orangered">&laquo;</a></li>
+                {% else %}
+                <li class="page-item disabled"><a class="page-link disabled" style="color:orangered">&laquo;</a></li>
+                {% endif %}
+        
+                {% if listprofile.number > 3 %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace page=1 %}" style="color:orangered"><i>1</i></a></li>
+                {% endif %}
+        
+                {% for i in listprofile.paginator.page_range %}
+                    {% if i > listprofile.number|add:"-2" %}
+                        {% if i < listprofile.number|add:"2" %}
+                            {% if listprofile.number == i %}
+                                <li class="page-item active" aria-current="page"><a class="page-link active" style="background-color: orangered; border-color:orangered">{{ i }}</a></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?{% url_replace page=i %}" style="color:orangered">{{ i }}</a></li>
+                            {% endif %} 
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+        
+                {% if listprofile.number < listprofile.paginator.num_pages|add:"-2" %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace page=listprofile.paginator.num_pages %}" style="color:orangered"><i>{{ listprofile.paginator.num_pages }}</i></a></li>
+                {% endif %}
+        
+                {% if listprofile.has_next %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace page=listprofile.next_page_number %}" style="color:orangered">&raquo;</a></li>
+                {% else %}
+                <li class="page-item disabled"><a  class="page-link disabled" style="color:orangered">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        </div>
+</div>
+{% else %}
+<div class="" style="margin-bottom: 200px;"> </div>
+<div class="d-flex w-100 justify-content-center mt-5 mb-5">
+    <div class="mt-5 mb-5">
+        <h3 class="display-6 mt-5 mb-5">Not found</h3>
+    </div>
+</div>
+<div class="" style="margin-bottom: 300px;"> </div>
+{% endif %}
+{% endblock body %}
