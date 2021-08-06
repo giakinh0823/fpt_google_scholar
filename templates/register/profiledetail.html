@@ -1,8 +1,6 @@
 {% extends 'base/base.html' %} {% block body %} {% load static %}
 {% load index %}
 {% load url_replace %}
-
-
     <!-- Chart code -->
 <script>
     am4core.ready(function() {
@@ -17,21 +15,16 @@
     series.randomness = 0.1;
     series.rotationThreshold = 0.5;
     series.minFontSize = 10;
-    
 
-    {% comment %} series.data = [ {
-        "tag": "validation",
-        "count": "55531"
-    } ]; {% endcomment %}
-
-    series.data = [
+    series.data  =  [
         {% for item in datatitle %}
-          { "tag": "{{ labeltitle|index:forloop.counter0 }}",
-            "count": "{{ datatitle|index:forloop.counter0 }}"
+          { 
+            "tag": "{{ labeltitle|index:forloop.counter0 }}",
+            "count": {{ datatitle|index:forloop.counter0 }}
           },
         {% endfor %}
     ]
-    
+
     series.dataFields.word = "tag";
     series.dataFields.value = "count";
     
@@ -67,7 +60,7 @@
     
     <!-- HTML -->
 {% if datatitle %}
-<div id="chartdiv"></div>
+    <div id="chartdiv"></div>
 {% endif %}
 
 <div class="container mt-5">

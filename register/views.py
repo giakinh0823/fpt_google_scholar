@@ -260,7 +260,6 @@ def profiledetail(request, profile_pk):
         text_tokens = [word for word in text_tokens if not word in stopwords.words('english')]
         text_tokens = pos_tag(text_tokens) 
         title=[x for (x,y) in text_tokens if y not in ('PRP$', 'VBZ','POS', 'DT', 'VBD','CD', '.', ',',':', ')', '(' )]
-            
         for word in title:
             try:
                 index = labeltitle.index(word.lower())
@@ -319,7 +318,7 @@ def profiledetail(request, profile_pk):
         articles = paginator.page(1)    
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
-    return render(request, 'register/profiledetail.html', {'profile': profile, 'articles': articles, 'labels': labels,'data': data,'labeltitle':labeltitle[:100], 'datatitle':datatitle[:100],  'authorlist': authorlist, 'totalCitations': totalCitations, 'totalCitationsSince': totalCitationsSince})
+    return render(request, 'register/profiledetail.html', {'profile': profile, 'articles': articles, 'labels': labels,'data': data,'labeltitle':labeltitle[:70], 'datatitle':datatitle[:70],  'authorlist': authorlist, 'totalCitations': totalCitations, 'totalCitationsSince': totalCitationsSince})
 
 def searchCoauthor(request):
     profile = UserProfile.objects.get(user = request.user)
