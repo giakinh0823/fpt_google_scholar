@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
-    
         user = sociallogin.user
         print(user)
         print(user.email)

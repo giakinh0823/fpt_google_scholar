@@ -25,9 +25,12 @@ SECRET_KEY = ')4e=-f+0&fb!*_=4+woc8-y-wxl@&pdz7gh0d+@h)@xao)=u-#'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'http://127.0.0.1:8000',
+    '*'
+]
 
-
+SITE_ID = 8
 
 # Application definition
 
@@ -88,12 +91,14 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_ADAPTER = 'Scholar.myAdapter.MySocialAccountAdapter'
+AUTHENTICATION_BACKENDS = ('Scholar.loginEmailandUser.EmailBackend',)
+
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_QUERY_EMAIL = True
 
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-DEFAULT_HTTP_PROTOCOL = "https"
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+# DEFAULT_HTTP_PROTOCOL = "https"
 
 ROOT_URLCONF = 'Scholar.urls'
 
@@ -218,4 +223,3 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-AUTHENTICATION_BACKENDS = ('Scholar.loginEmailandUser.EmailBackend',)

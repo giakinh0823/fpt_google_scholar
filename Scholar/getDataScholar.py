@@ -376,3 +376,6 @@ def data_scrap(link,user):
     print("Your file is ready! Check " + author_name.text)
     print("-----------------------------------------------")
     print("PROCESS ENDED.")
+
+if __name__ == "__main__":
+    data_scrap()

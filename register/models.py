@@ -13,7 +13,7 @@ class UserProfile(models.Model):
     AreasOfInterest = models.CharField(max_length=256, default=None, blank=True, null=True)
     EmailForVerification  = models.CharField(max_length=256, default=None, blank=True, null=True)
     homepage  = models.URLField(blank=True) #blank=true có nghĩa là để trống không cần điền vẫn ok
-    avatar = models.ImageField(upload_to='images', blank=True) 
+    avatar = models.ImageField(upload_to='images', blank=True, default="images/avatar.png") 
     def __str__(self) -> str:
         return self.user.username
     

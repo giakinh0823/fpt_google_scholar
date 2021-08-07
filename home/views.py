@@ -54,11 +54,10 @@ def home(request):
         if profile == None:
             profile == UserProfile(user = request.user, name = request.user.get_full_name(), Affiliation=request.user.email, EmailForVerification = 'Verified email at fpt.edu.vn').save()
             profile = UserProfile.objects.get(user = request.user)
-            img_url='https://sqlvan3doctgbfyraq.blob.core.windows.net/vulnerability-assessment/media/images/avatar_scholar_56_WcEBGcd.png'
-            name_image = str(request.user)
-            content = io.BytesIO(urllib2.urlopen(img_url).read())
-            profile.avatar.save(name_image, content, save=True)
-            profile.save()
+            # img_url='https://sqlvan3doctgbfyraq.blob.core.windows.net/vulnerability-assessment/media/images/avatar_scholar_56_WcEBGcd.png'
+            # name_image = str(request.user)
+            # content = io.BytesIO(urllib2.urlopen(img_url).read())
+            # profile.avatar.save(name_image, content, save=True)
             request.session['user'] = { 'image': profile.avatar.url }
         else:
             profile = UserProfile.objects.get(user = request.user)
