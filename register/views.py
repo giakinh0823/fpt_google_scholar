@@ -20,6 +20,8 @@ import urllib.request as urllib2
 from django.core.files import File
 from django.core.files.base import ContentFile
 import io
+from datetime import date
+
 
 
 
@@ -286,7 +288,10 @@ def profiledetail(request, profile_pk):
         if index==len(articlelist)-1:
             max=0
         else:
-            max = int(articlelist[0].year)
+            try:
+                max = int(articlelist[0].year)
+            except:
+                max = date.today().year
         index =len(articlelist)-1
         while not articlelist[index].year:
             index-=1

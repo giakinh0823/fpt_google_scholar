@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from datetime import datetime
+from selenium.webdriver.chrome.options import Options
 
 # ignore future warnings
 warnings.filterwarnings("ignore")
@@ -95,6 +96,10 @@ from django.contrib.auth.models import User
 import random
 import string
 
+from django.test import TestCase
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -108,10 +113,11 @@ def data_profile(link):
     list_of_Affiliation = []
     list_of_EmailForVerification = []
     
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    # driver = webdriver.Chrome(ChromeDriverManager().install())
     # driver = webdriver.Remote(
     #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
     #         desired_capabilities= desired_caps)
+    driver = webdriver.Remote("http://selenium:4444/wd/hub", DesiredCapabilities.CHROME)
     driver.get(str(link))
 
     while True:
@@ -197,10 +203,11 @@ def data_scrap(link,user):
 
     # Driver
     global driver    
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    # driver = webdriver.Chrome(ChromeDriverManager().install())
     # driver = webdriver.Remote(
     #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
     #         desired_capabilities= desired_caps)
+    driver = webdriver.Remote("http://selenium:4444/wd/hub", DesiredCapabilities.CHROME)
     driver.get(str(link))
     time.sleep(1)
 

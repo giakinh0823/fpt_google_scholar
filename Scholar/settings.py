@@ -25,10 +25,7 @@ SECRET_KEY = ')4e=-f+0&fb!*_=4+woc8-y-wxl@&pdz7gh0d+@h)@xao)=u-#'
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'http://127.0.0.1:8000',
-    '*'
-]
+ALLOWED_HOSTS = ['*']
 
 SITE_ID = 8
 
@@ -146,23 +143,34 @@ WSGI_APPLICATION = 'Scholar.wsgi.application'
 #     },
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'sql_server.pyodbc',
+#         'NAME': 'scholar',
+#         'USER': '',
+#         'PASSWORD': '',
+#         'HOST': '(local)',
+#         'PORT': '',
+#         'OPTIONS': {
+#             'unicode_results': True,
+#             'extra_params': 'ClientCharset=utf8',
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#         },
+#     },
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'sql_server.pyodbc',
-        'NAME': 'scholar',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '(local)',
-        'PORT': '',
-        'OPTIONS': {
-            'unicode_results': True,
-            'extra_params': 'ClientCharset=utf8',
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
-    },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
+        'PORT': 5432,
+    }
 }
 
-DATABASE_CONNECTION_POOLING = False
+# DATABASE_CONNECTION_POOLING = False
 
 
 # Password validation
