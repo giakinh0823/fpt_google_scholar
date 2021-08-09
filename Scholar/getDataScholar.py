@@ -117,7 +117,7 @@ def data_profile(link):
     # driver = webdriver.Remote(
     #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
     #         desired_capabilities= desired_caps)
-    driver = webdriver.Remote("http://selenium:4444/wd/hub", DesiredCapabilities.CHROME)
+    driver = webdriver.Remote("http://selenium-hub:4444/wd/hub", DesiredCapabilities.FIREFOX)
     driver.get(str(link))
 
     while True:
@@ -207,7 +207,7 @@ def data_scrap(link,user):
     # driver = webdriver.Remote(
     #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
     #         desired_capabilities= desired_caps)
-    driver = webdriver.Remote("http://selenium:4444/wd/hub", DesiredCapabilities.CHROME)
+    driver = webdriver.Remote("http://selenium-hub:4444/wd/hub", DesiredCapabilities.FIREFOX)
     driver.get(str(link))
     time.sleep(1)
 
@@ -256,7 +256,10 @@ def data_scrap(link,user):
         htmlSource = driver.page_source
         only_tags_with_id = SoupStrainer(id="gs_top")
         soup = BeautifulSoup(htmlSource, "html.parser", parse_only=only_tags_with_id)
-        authors = soup.findAll("div", {"class": "gsc_oci_value"})[0].text
+        try:
+            authors = soup.findAll("div", {"class": "gsc_oci_value"})[0].text
+        except:
+            authors = ""
         list_of_authors.append(authors)
 
         link_of_pdf = SoupStrainer(id="gsc_oci_title_wrapper")

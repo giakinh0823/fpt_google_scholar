@@ -376,13 +376,21 @@ def getdataArticle(request):
             if 'scholar.google.com' in str(profile.homepage):
                 data_scrap(profile.homepage, profile.user)
 
+import threading
 
 def updateData(request):
     getdataProfile(request)
+    task = threading.Thread(target=getdataProfile,args=[request])
+    task.daemon = True
+    task.start()
     return redirect('register:profile')
 
+from multiprocessing import Pool
 def updateArticle(request):
-    getdataArticle(request)
+    # getdataArticle(request)
+    task = threading.Thread(target=getdataArticle,args=[request])
+    task.daemon = True
+    task.start()
     return redirect('register:profile')
 
 
