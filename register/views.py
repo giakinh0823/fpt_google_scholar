@@ -356,41 +356,30 @@ def addArticle(request):
     
     
 
-def getdataProfile(request):
-    if request.is_ajax():
-        az = 'fpt+university'
-        # str = 'fpt+university'
-        profiles = UserProfile.objects.all();
-        page = len(profiles)
-        while page % 10 !=0:
-            page -= 1
-        number = str(page) 
-        data_profile('https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors='+ az +'&astart='+number)
+def getdataProfile():
+    az = 'fpt+university'
+    # str = 'fpt+university'
+    profiles = UserProfile.objects.all();
+    page = len(profiles)
+    while page % 10 !=0:
+        page -= 1
+    number = str(page) 
+    data_profile('https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors='+ az +'&astart='+number)
     
 
-def getdataArticle(request):
-    if request.is_ajax():
-        profiles = UserProfile.objects.all()
-        for profile in profiles:
-            print("Update article profile: "+ profile.name)
-            if 'scholar.google.com' in str(profile.homepage):
-                data_scrap(profile.homepage, profile.user)
-
-import threading
+def getdataArticle():
+    profiles = UserProfile.objects.all()
+    for profile in profiles:
+        print("Update article profile: "+ profile.name)
+        if 'scholar.google.com' in str(profile.homepage):
+            data_scrap(profile.homepage, profile.user)
 
 def updateData(request):
-    getdataProfile(request)
-    task = threading.Thread(target=getdataProfile,args=[request])
-    task.daemon = True
-    task.start()
+    getdataProfile()
     return redirect('register:profile')
 
-from multiprocessing import Pool
 def updateArticle(request):
-    # getdataArticle(request)
-    task = threading.Thread(target=getdataArticle,args=[request])
-    task.daemon = True
-    task.start()
+    getdataArticle()
     return redirect('register:profile')
 
 
