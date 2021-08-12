@@ -1,9 +1,5 @@
 import asyncio
-from time import time
-from celery import result
 from django.http.response import HttpResponse, JsonResponse
-from article.models import Article
-from article.views import article
 from django.shortcuts import render,redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -13,32 +9,11 @@ from .models import *
 from article.forms import ArticleForm
 from article.models import *
 from django.contrib.auth.decorators import login_required,user_passes_test
-from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
-from urllib.parse import urlparse
-import urllib.request as urllib2
-from django.core.files import File
-from django.core.files.base import ContentFile
-import io
-from datetime import date
-from .tasks import word_cloud,get_citations
-from django.core import serializers
-import json
+from .tasks import getDataArticleCelery, getDataProfileCelery
+from .utils import word_cloud,get_citations
 from celery.result import AsyncResult
-
-
-
-
-
-
-
-#update data
-
-from article.models import Article
-from Scholar.getDataScholar import data_scrap,data_profile
 from register.models import UserProfile
-from asgiref.sync import sync_to_async
 import asyncio
 
 import nltk
@@ -123,22 +98,19 @@ def setCoAuthor(request, profile):
 @login_required
 def profile(request):
     profile = UserProfile.objects.get(user = request.user)
-
-    res_word_cloud = word_cloud.delay(profile.user.id)
-    result_word_cloud = AsyncResult(res_word_cloud.id)
-    labeltitle,datatitle = result_word_cloud.get()
-
-    res_citations = get_citations.delay(profile.user.id)
-    result_citations = AsyncResult(res_citations.id)
-    labels, data,totalCitations,totalCitationsSince = result_citations.get()
+    labeltitle,datatitle = word_cloud(profile.user.id)
+    labels, data,totalCitations,totalCitationsSince = get_citations(profile.user.id)
 
     profilelist = UserProfile.objects.all()
     articles = Article.objects.filter(user = request.user)
     authorlist = CoAuthor.objects.filter(author = profile)
     #set-co-Author
     if request.is_ajax():
-        coauthorlist = setCoAuthor(request, profile)
-        return render(request, 'register/listcoAuthorProfile.html', {'authorlist':coauthorlist})
+        try:
+            coauthorlist = setCoAuthor(request, profile)
+            return render(request, 'register/listcoAuthorProfile.html', {'authorlist':coauthorlist})
+        except:
+            return render(request, 'register/listcoAuthorProfile.html')
         
     #co-Author
     coAuthors = []
@@ -207,13 +179,8 @@ def listprofile(request):
 def profiledetail(request, profile_pk):
     profile = UserProfile.objects.get(id = profile_pk)
 
-    res_word_cloud = word_cloud.delay(profile.user.id)
-    result_word_cloud = AsyncResult(res_word_cloud.id)
-    labeltitle,datatitle = result_word_cloud.get()
-    
-    res_citations = get_citations.delay(profile.user.id)
-    result_citations = AsyncResult(res_citations.id)
-    labels, data,totalCitations,totalCitationsSince = result_citations.get()
+    labeltitle,datatitle = word_cloud(profile.user.id)
+    labels, data,totalCitations,totalCitationsSince = get_citations(profile.user.id)
     
     articles = Article.objects.filter(user = profile.user)
     authorlist = CoAuthor.objects.filter(author = profile)
@@ -265,32 +232,13 @@ def addArticle(request):
         else:
             raise forms.ValidationError("wrong format")
         return JsonResponse({"ok": "ok"})
-    
-    
-def getdataProfile():
-    az = 'fpt+university'
-    # str = 'fpt+university'
-    profiles = UserProfile.objects.all();
-    page = len(profiles)
-    while page % 10 !=0:
-        page -= 1
-    number = str(page) 
-    data_profile('https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors='+ az +'&astart='+number)
-    
-
-def getdataArticle():
-    profiles = UserProfile.objects.all()
-    for profile in profiles:
-        print("Update article profile: "+ profile.name)
-        if 'scholar.google.com' in str(profile.homepage):
-            data_scrap(profile.homepage, profile.user)
-
+        
 def updateData(request):
-    getdataProfile()
+    getDataProfileCelery.delay()
     return redirect('register:profile')
 
 def updateArticle(request):
-    getdataArticle()
+    getDataArticleCelery.delay()
     return redirect('register:profile')
 
 

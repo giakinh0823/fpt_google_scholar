@@ -9,6 +9,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from selenium.webdriver.chrome.options import Options
+from django.template.defaultfilters import slugify
+
 
 # ignore future warnings
 warnings.filterwarnings("ignore")
@@ -71,23 +73,6 @@ import io
 from selenium.webdriver.common.keys import Keys
 
 
-#https://automation.lambdatest.com/
-
-username = "giakinhfullstack" # Replace the username
-access_key = "53jxfmcMLBCyKDpLOyGTRiZUUKvDs9nnw5TPTeOy9cdDmd0MTO" # Replace the access key
-
-desired_caps = {
-            "build": 'PyunitTest sample build', # Change your build name here
-            "name": 'Py-unittest', # Change your test name here
-            "platform": 'Windows 10', # Change your OS version here
-            "browserName": 'Chrome', # Change your browser here
-            "version": '87.0', # Change your browser version here
-            "resolution": '1024x768', # Change your resolution here
-            "console": 'true', # Enable or disable console logs
-            "network":'true'   # Enable or disable network logs
-        }
-
-
 
 from article.models import Article
 from register.models import UserProfile
@@ -112,11 +97,7 @@ def data_profile(link):
     list_of_avatar = []
     list_of_Affiliation = []
     list_of_EmailForVerification = []
-    
-    # driver = webdriver.Chrome(ChromeDriverManager().install())
-    # driver = webdriver.Remote(
-    #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
-    #         desired_capabilities= desired_caps)
+
     driver = webdriver.Remote("http://selenium-hub:4444/wd/hub", DesiredCapabilities.FIREFOX)
     driver.get(str(link))
 
@@ -157,7 +138,10 @@ def data_profile(link):
             # print(profile)
             if profile == None and "FPT University" in list_of_Affiliation[index] :
                 # print("Set data")
-                user = User(username = get_random_string(12), password=get_random_string(8))
+                try:
+                    user = User.objects.create(username = slugify(fix_encoding(list_of_name[index])), password="123456")
+                except:
+                    user = User.objects.create(username = slugify(fix_encoding(list_of_name[index]+f"{get_random_string(6)}")), password="123456")
                 user.save()
                 profile = UserProfile(user = user ,name=fix_encoding(list_of_name[index]),Affiliation =fix_encoding(list_of_Affiliation[index]),EmailForVerification = fix_encoding(list_of_EmailForVerification[index]), homepage = list_of_link[index])
                 img_url = list_of_avatar[index]
@@ -204,9 +188,6 @@ def data_scrap(link,user):
     # Driver
     global driver    
     # driver = webdriver.Chrome(ChromeDriverManager().install())
-    # driver = webdriver.Remote(
-    #         command_executor="https://{}:{}@hub.lambdatest.com/wd/hub".format(username, access_key),
-    #         desired_capabilities= desired_caps)
     driver = webdriver.Remote("http://selenium-hub:4444/wd/hub", DesiredCapabilities.FIREFOX)
     driver.get(str(link))
     time.sleep(1)

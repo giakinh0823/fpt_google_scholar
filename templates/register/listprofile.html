@@ -3,7 +3,7 @@
 {% load url_replace %}
 
 {% if listprofile %}
-<div class="container mt-5">
+<div class="container mt-5"style="min-height: 40vh">
     <div>
         {% for profile in listprofile %}
         <a  {% if user.is_authenticated %}
@@ -33,7 +33,7 @@
         </a>
         {% endfor %}
     </div>
-    <div class="d-flex w-100 justify-content-center mt-5 mb-5">
+    <div class="d-flex w-100 justify-content-center mt-5 mb-5" >
         <nav aria-label="Page navigation example">
             <ul class="pagination">
                 {% if listprofile.has_previous %}

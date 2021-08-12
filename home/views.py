@@ -17,10 +17,6 @@ from django.core.files import File
 from django.core.files.base import ContentFile
 import io
 
-
-
-
-
 # Create your views here.
 
 
