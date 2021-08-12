@@ -1,6 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
-from celery import shared_task
 import re
 from .models import Article, KeywordResearch
 from django.db.models import Q
@@ -13,8 +10,6 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet as wn
 from nltk import pos_tag
 
-
-@shared_task(name="keyword_research")
 def keyword_research(getTitle):
     articles = Article.objects.filter(Q(title__icontains=getTitle) | Q(author__icontains=getTitle))
     if getTitle and articles:
@@ -41,5 +36,3 @@ def keyword_research(getTitle):
                 else:
                     keywordResearch = KeywordResearch(keyword = keyword.lower(), quantity = 1)
                     keywordResearch.save()
-        
-        

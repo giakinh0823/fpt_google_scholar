@@ -7,19 +7,7 @@ from .filters import *
 import re
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from .tasks import keyword_research
-from  register.tasks import getDataCelery
-
-import nltk
-nltk.download('stopwords') #if cant not run please remove comment in here
-nltk.download('punkt') #if cant not run please remove comment in here
-nltk.download('averaged_perceptron_tagger')
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.corpus import wordnet as wn
-from nltk import pos_tag
-
-
+from .utils import keyword_research
 # Create your views here.
 
 
