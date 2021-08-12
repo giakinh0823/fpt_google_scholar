@@ -1,29 +1,46 @@
 from __future__ import absolute_import, unicode_literals
+
 from celery import shared_task
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.corpus import wordnet as wn
-from nltk import pos_tag
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from django.core import serializers
 import re
 from article.models import Article
 from django.contrib.auth.models import User
 from datetime import date
+from Scholar.getDataScholar import data_profile, data_scrap
+from .models import *
+
+import nltk
+nltk.download('stopwords') #if can't not run please remove comment in here
+nltk.download('punkt') #if can't not run please remove comment in here
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.corpus import wordnet as wn
+from nltk import pos_tag
 
 
+def getDataProfile():
+    az = 'fpt+university'
+    # str = 'fpt+university'
+    profiles = UserProfile.objects.all();
+    page = len(profiles)
+    while page % 10 !=0:
+        page -= 1
+    number = str(page) 
+    data_profile('https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors='+ az +'&astart='+number)
+    
+def getDataArticle():
+    profiles = UserProfile.objects.all()
+    for profile in profiles:
+        print("Update article profile: "+ profile.name)
+        if 'scholar.google.com' in str(profile.homepage):
+            data_scrap(profile.homepage, profile.user)
 
-
-@shared_task
+@shared_task(name="get_data")
 def getDataCelery():
-    from .views import getdataArticle,getdataProfile
-    getdataProfile()
-    getdataArticle()
+    getDataProfile()
+    getDataArticle()
 
 
-@shared_task
+@shared_task(name="word_cloud")
 def word_cloud(userId):
     labeltitle = []
     datatitle = []
@@ -51,7 +68,7 @@ def word_cloud(userId):
     labeltitle=labeltitle[::-1] 
     return labeltitle, datatitle
 
-@shared_task
+@shared_task(name="get_citations")
 def get_citations(userId):
     labels = []
     data = []

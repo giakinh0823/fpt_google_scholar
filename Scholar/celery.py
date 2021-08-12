@@ -25,7 +25,7 @@ def debug_task(self):
 
 app.conf.beat_schedule = {
     'get-data': {
-        'task': 'register.tasks.getDataCelery',
-        'schedule': crontab(hour=0, minute=0),
+        'task': 'get_data',
+        'schedule': crontab(minute='27', hour="20"),
     },
 }

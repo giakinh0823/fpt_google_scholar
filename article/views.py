@@ -8,7 +8,7 @@ import re
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from .tasks import keyword_research
-
+from  register.tasks import getDataCelery
 
 import nltk
 nltk.download('stopwords') #if cant not run please remove comment in here

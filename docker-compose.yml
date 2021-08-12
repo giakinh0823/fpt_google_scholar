@@ -77,7 +77,7 @@ services:
     container_name: celery-beat_scholar
     command: celery -A Scholar beat -l info
     volumes:
-      - .:/code
+      - .:/Scholar
     depends_on:
       - web
       - db

@@ -1,24 +1,20 @@
 from __future__ import absolute_import, unicode_literals
+
 from celery import shared_task
+import re
+from .models import Article, KeywordResearch
+from django.db.models import Q
+
 import nltk
+nltk.download('stopwords') #if can't not run please remove comment in here
+nltk.download('punkt') #if can't not run please remove comment in here
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet as wn
 from nltk import pos_tag
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from django.core import serializers
-import re
-from .models import Article, KeywordResearch
-from django.contrib.auth.models import User
-from datetime import date
-from django.db.models import Q
 
 
-
-
-
-@shared_task
+@shared_task(name="keyword_research")
 def keyword_research(getTitle):
     articles = Article.objects.filter(Q(title__icontains=getTitle) | Q(author__icontains=getTitle))
     if getTitle and articles:
