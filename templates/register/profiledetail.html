@@ -1,64 +1,6 @@
 {% extends 'base/base.html' %} {% block body %} {% load static %}
 {% load index %}
 {% load url_replace %}
-    <!-- Chart code -->
-<script>
-    am4core.ready(function() {
-    
-    // Themes begin
-    am4core.useTheme(am4themes_animated);
-    // Themes end
-    
-    var chart = am4core.create("chartdiv", am4plugins_wordCloud.WordCloud);
-    chart.fontFamily = "";
-    var series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
-    series.randomness = 0.1;
-    series.rotationThreshold = 0.5;
-    series.minFontSize = 10;
-
-    series.data  =  [
-        {% for item in datatitle %}
-          { 
-            "tag": "{{ labeltitle|index:forloop.counter0 }}",
-            "count": {{ datatitle|index:forloop.counter0 }}
-          },
-        {% endfor %}
-    ]
-
-    series.dataFields.word = "tag";
-    series.dataFields.value = "count";
-    
-    series.heatRules.push({
-     "target": series.labels.template,
-     "property": "fill",
-     "min": am4core.color("#000000"),
-     "max": am4core.color("#FF4500"), //green
-     "dataField": "value"
-    });
-    
-    <!-- series.labels.template.url = ""; -->
-    <!-- series.labels.template.urlTarget = "_blank"; -->
-    series.labels.template.tooltipText = "{word}: {value}";
-    
-    var hoverState = series.labels.template.states.create("hover");
-    hoverState.properties.fill = am4core.color("#000");
-
-
-    
-    //done care
-
-    {% comment %} var subtitle = chart.titles.create();
-    subtitle.text = "(click to open)";
-    
-    var title = chart.titles.create();
-    title.text = "Scholar";
-    title.fontSize = 20;
-    title.fontWeight = "800"; {% endcomment %}
-    
-    }); // end am4core.ready()
-</script>
-    
-    <!-- HTML -->
 {% if datatitle %}
     <div id="chartdiv"></div>
 {% endif %}
@@ -446,6 +388,42 @@
         </div>
     </div>
 </div>
+
+<script>
+    am4core.ready(function() {
+        am4core.useTheme(am4themes_animated);
+        var chart = am4core.create("chartdiv", am4plugins_wordCloud.WordCloud);
+        chart.fontFamily = "";
+        var series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
+        series.randomness = 0.1;
+        series.rotationThreshold = 0.5;
+        series.minFontSize = 10;
+
+        series.data  =  [
+            {% for item in datatitle %}
+            { 
+                "tag": "{{ labeltitle|index:forloop.counter0 }}",
+                "count": {{ datatitle|index:forloop.counter0 }}
+            },
+            {% endfor %}
+        ]
+
+        series.dataFields.word = "tag";
+        series.dataFields.value = "count";
+    
+        series.heatRules.push({
+            "target": series.labels.template,
+            "property": "fill",
+            "min": am4core.color("#000000"),
+            "max": am4core.color("#FF4500"), //green
+            "dataField": "value"
+        });
+    
+        series.labels.template.tooltipText = "{word}: {value}";
+        var hoverState = series.labels.template.states.create("hover");
+        hoverState.properties.fill = am4core.color("#000");
+    }); 
+</script>
 
 
 {% endblock body %}

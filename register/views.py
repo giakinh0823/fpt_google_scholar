@@ -1,5 +1,6 @@
 import asyncio
 from time import time
+from celery import result
 from django.http.response import HttpResponse, JsonResponse
 from article.models import Article
 from article.views import article
@@ -21,6 +22,13 @@ from django.core.files import File
 from django.core.files.base import ContentFile
 import io
 from datetime import date
+from .tasks import word_cloud,get_citations
+from django.core import serializers
+import json
+from celery.result import AsyncResult
+
+
+
 
 
 
@@ -181,36 +189,52 @@ def setCoAuthor(request, profile):
 @login_required
 def profile(request):
     profile = UserProfile.objects.get(user = request.user)
+    res_word_cloud = word_cloud.delay(profile.user.id)
+    result_word_cloud = AsyncResult(res_word_cloud.id)
+    labeltitle,datatitle = result_word_cloud.get()
+    res_citations = get_citations.delay(profile.user.id)
+    result_citations = AsyncResult(res_citations.id)
+    labels, data,totalCitations,totalCitationsSince = result_citations.get()
+
+
     profilelist = UserProfile.objects.all()
     articles = Article.objects.filter(user = request.user)
     authorlist = CoAuthor.objects.filter(author = profile)
-    
     #set-co-Author
     if request.is_ajax():
         coauthorlist = setCoAuthor(request, profile)
         return render(request, 'register/listcoAuthorProfile.html', {'authorlist':coauthorlist})
         
-    
     #co-Author
     coAuthors = []
     for author in authorlist:
         coAuthors.append(author.coAuthor.id)
         
-    #set-map
-    labels, data, totalCitations, totalCitationsSince = getCitations(articles)
-    labeltitle, datatitle = getWordCloud(articles)
-        
     #page
     paginator = Paginator(articles, 15)
     pageNumber = request.GET.get('page',1)
+
     try:
         articles = paginator.page(pageNumber)
     except PageNotAnInteger:
         articles = paginator.page(1)
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
-    
-    return render(request, 'register/profile.html', {'profile': profile, 'articles': articles, 'labels': labels, 'data': data,'labeltitle':labeltitle[:70],'datatitle':datatitle[:70] ,'CoAuthorForm': CoAuthorForm(), 'profilelist': profilelist, 'coAuthorList': coAuthors, 'articleForm': ArticleForm(), 'authorlist': authorlist, 'totalCitations': totalCitations, 'totalCitationsSince': totalCitationsSince})
+    context = {
+        'profile': profile, 
+        'articles': articles, 
+        'labels': labels, 
+        'data': data,
+        'labeltitle':labeltitle[:70],
+        'datatitle':datatitle[:70],
+        'CoAuthorForm': CoAuthorForm(), 
+        'profilelist': profilelist, 
+        'coAuthorList': coAuthors, 
+        'articleForm': ArticleForm(), 
+        'authorlist': authorlist, 
+        'totalCitations': totalCitations, 
+        'totalCitationsSince': totalCitationsSince}
+    return render(request, 'register/profile.html', context)
 
 def findProfile(request):
     listprofile=[]
@@ -239,10 +263,6 @@ def findProfile(request):
         listprofile = paginator.page(paginator.num_pages)
     return listprofile, request
 
-# async def viewArticle(request,listprofile ):
-#     print("1")
-#     return render(request, 'register/listprofile.html', {'listprofile': listprofile, 'profileFilter': ProfileFilter()})
-
 def listprofile(request):
     listprofile = []
     listprofile = findProfile(request)
@@ -250,69 +270,13 @@ def listprofile(request):
 
 
 def profiledetail(request, profile_pk):
-    labels = []
-    data = []
-    labeltitle = []
-    datatitle = []
     profile = UserProfile.objects.get(id = profile_pk)
-    articlelist = Article.objects.filter(user = profile.user)
-    listarticle = articlelist
-    for item in listarticle:
-        text_tokens = nltk.word_tokenize(str(item.title))
-        text_tokens = [word for word in text_tokens if not word in stopwords.words('english')]
-        text_tokens = pos_tag(text_tokens) 
-        title=[x for (x,y) in text_tokens if y not in ('PRP$', 'VBZ','POS', 'DT', 'VBD','CD', '.', ',',':', ')', '(' )]
-        for word in title:
-            try:
-                index = labeltitle.index(word.lower())
-            except:
-                index = None
-            if index:
-                datatitle[index]+=1
-            else:
-                labeltitle.append(word.lower())
-                datatitle.append(1)
-    lis = [(datatitle[i], labeltitle[i]) for i in range(len(datatitle))]
-    datatitle.sort()
-    labeltitle = [x[1] for i in range(len(datatitle)) for x in lis if x[0] == i]
-    # datatitle, labeltitle = zip(*sorted(zip(datatitle, labeltitle)))
-    datatitle=datatitle[::-1] #reverse list
-    labeltitle=labeltitle[::-1] #reverse list
-    totalCitations=0
-    totalCitationsSince=0
-    if articlelist:
-        articlelist = articlelist.order_by('-year')
-        index = 0
-        while not articlelist[index].year:
-            index+=1
-        if index==len(articlelist)-1:
-            max=0
-        else:
-            try:
-                max = int(articlelist[0].year)
-            except:
-                max = date.today().year
-        index =len(articlelist)-1
-        while not articlelist[index].year:
-            index-=1
-        if index==0:
-            min=0
-        else:
-            min = int(articlelist[index].year)
-        for x in range(min, max+1):
-            labels.append(x)
-            cyted = 0 
-            for article in articlelist:
-                if article.year:
-                    if x == int(article.year):
-                        if article.total_citations:
-                            cyted += int(article.total_citations)
-                            totalCitations+=int(article.total_citations)
-                            if x>=2016:
-                                totalCitationsSince+=int(article.total_citations)
-            data.append(cyted)
-            
-        articlelist = Article.objects.filter(user = profile.user)
+    res_word_cloud = word_cloud.delay(profile.user.id)
+    result_word_cloud = AsyncResult(res_word_cloud.id)
+    labeltitle,datatitle = result_word_cloud.get()
+    res_citations = get_citations.delay(profile.user.id)
+    result_citations = AsyncResult(res_citations.id)
+    labels, data,totalCitations,totalCitationsSince = result_citations.get()
     articles = Article.objects.filter(user = profile.user)
     authorlist = CoAuthor.objects.filter(author = profile)
     paginator = Paginator(articles, 15)
@@ -323,7 +287,18 @@ def profiledetail(request, profile_pk):
         articles = paginator.page(1)    
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
-    return render(request, 'register/profiledetail.html', {'profile': profile, 'articles': articles, 'labels': labels,'data': data,'labeltitle':labeltitle[:70], 'datatitle':datatitle[:70],  'authorlist': authorlist, 'totalCitations': totalCitations, 'totalCitationsSince': totalCitationsSince})
+    context = { 
+        'profile': profile, 
+        'articles': articles, 
+        'labels': labels,
+        'data': data,
+        'labeltitle':labeltitle[:70], 
+        'datatitle':datatitle[:70],  
+        'authorlist': authorlist, 
+        'totalCitations': totalCitations, 
+        'totalCitationsSince': totalCitationsSince
+    }
+    return render(request, 'register/profiledetail.html',context)
 
 def searchCoauthor(request):
     profile = UserProfile.objects.get(user = request.user)
@@ -354,8 +329,6 @@ def addArticle(request):
         return JsonResponse({"ok": "ok"})
     
     
-    
-
 def getdataProfile():
     az = 'fpt+university'
     # str = 'fpt+university'

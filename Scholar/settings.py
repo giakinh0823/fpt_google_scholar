@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'django_celery_results',
     'django_celery_beat',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +119,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Scholar.wsgi.application'
+ASGI_APPLICATION = 'Scholar.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
+
 
 
 # Database

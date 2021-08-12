@@ -3,6 +3,7 @@ version: "3.9"
 services:
   db:
     image: postgres
+    container_name: db_scholar
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
@@ -21,6 +22,7 @@ services:
     
   selenium-hub:
     image: selenium/hub
+    container_name: selenium_scholar
     ports:
       - "4444:4444"
     environment:
@@ -30,6 +32,7 @@ services:
 
   chrome:
     image: selenium/node-chrome
+    container_name: chrome_scholar
     depends_on:
       - selenium-hub
     environment:
@@ -40,6 +43,7 @@ services:
 
   firefox:
     image: selenium/node-firefox
+    container_name: firefox_scholar
     depends_on:
       - selenium-hub
     environment:
@@ -50,6 +54,7 @@ services:
 
   redis:
     image: redis:alpine
+    container_name: redis_scholar
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
@@ -58,15 +63,29 @@ services:
 
   celery:
     build: .
-    command: celery -A Scholar worker --beat --scheduler django --loglevel=info
+    container_name: celery_scholar
+    command: celery -A Scholar worker -l info
     volumes:
       - .:/Scholar
     depends_on:
       - web
       - redis
+      - db
+  
+  celery-beat:
+    build: .
+    container_name: celery-beat_scholar
+    command: celery -A Scholar beat -l info
+    volumes:
+      - .:/code
+    depends_on:
+      - web
+      - db
+      - redis
       
   web:
     build: .
+    container_name: web_scholar
     volumes:
       - .:/Scholar
     ports:
@@ -84,4 +103,20 @@ services:
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     restart: on-failure
 
+  flower:
+    image: mher/flower
+    container_name: flower_scholar
+    command: ["celery","flower", "--broker=redis://redis:6379/0", "--port=5555"]
+    ports:
+      - 5555:5555
+    depends_on: 
+      - redis
+      - db
+      - celery
+    links: 
+      - redis
+      - db
+    environment: 
+      - CELERY_BROKER_API=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
   
