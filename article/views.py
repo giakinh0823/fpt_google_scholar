@@ -7,6 +7,7 @@ from .filters import *
 import re
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
+from .tasks import keyword_research
 
 
 import nltk
@@ -25,41 +26,12 @@ from nltk import pos_tag
 def article(request):
     articles = Article.objects.all() 
     if request.GET:
-        # articlesFilter = ArticleFilter(request.GET, queryset=articles)
-        # articles= articlesFilter.qs
         try:
             getTitle = request.GET['search']
         except:
             getTitle = None 
         if getTitle:
-            articles = Article.objects.filter(Q(title__icontains=request.GET['search']) | Q(author__icontains=request.GET['search']))
-        
-        if getTitle and articles:
-            title = str(articles[0]).lower()
-            title = title.strip()
-            
-            text_tokens = nltk.word_tokenize(title)
-            text_tokens = [word for word in text_tokens if not word in stopwords.words('english')]
-            text_tokens = pos_tag(text_tokens) 
-            title=[x for (x,y) in text_tokens if y not in ('PRP$', 'VBZ','POS','DT',':',')','(','.',',')]
-            if getTitle:
-                keywords = str(request.GET['search']).strip()
-                text_tokens = nltk.word_tokenize(keywords)
-                text_tokens = [word for word in text_tokens if not word in stopwords.words('english')]
-                text_tokens = pos_tag(text_tokens) 
-                keywords = [x for (x,y) in text_tokens if y not in ('PRP$', 'VBZ','POS', 'DT',':',')','(','.',',') and x.lower() in title]
-            
-                for keyword in keywords:
-                    try:
-                        keywordResearch = KeywordResearch.objects.get(keyword = keyword.lower())
-                    except KeywordResearch.DoesNotExist:
-                        keywordResearch = None
-                    if keywordResearch:
-                        keywordResearch.quantity += 1
-                        keywordResearch.save()
-                    else:
-                        keywordResearch = KeywordResearch(keyword = keyword.lower(), quantity = 1)
-                        keywordResearch.save()
+            keyword_research(getTitle)
         paginator = Paginator(articles, 15)
         pageNumber = request.GET.get('page',1)
         try:

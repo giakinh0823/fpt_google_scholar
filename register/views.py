@@ -101,72 +101,6 @@ def logoutuser(request):
     return redirect('home:index')
 
 
-def getCitations(articles):
-    articlelist=articles
-    labels = []
-    data = []
-    totalCitations=0
-    totalCitationsSince=0
-    if articlelist:
-        articlelist = articlelist.order_by('-year')
-        index = 0
-        while not articlelist[index].year:
-            index+=1
-        if index==len(articlelist)-1:
-            max=0
-        else:
-            max = int(articlelist[0].year)
-        index =len(articlelist)-1
-        while not articlelist[index].year:
-            index-=1
-        if index==0:
-            min=0
-        else:
-            min = int(articlelist[index].year)
-        for x in range(min, max+1):
-            labels.append(x)
-            cyted = 0 
-            for article in articlelist:
-                if article.year:
-                    if x == int(article.year):
-                        if article.total_citations:
-                            cyted += int(article.total_citations)
-                            totalCitations+=int(article.total_citations)
-                            if x>=2016:
-                                totalCitationsSince+=int(article.total_citations)
-            data.append(cyted)
-    return  labels, data, totalCitations, totalCitationsSince
-
-
-def getWordCloud(articles):
-    listarticle=articles
-    labeltitle = []
-    datatitle = []
-    for item in listarticle:
-            text_tokens = nltk.word_tokenize(str(item.title))
-            text_tokens = [word for word in text_tokens if not word in stopwords.words('english')]
-            text_tokens = pos_tag(text_tokens) 
-            title=[x for (x,y) in text_tokens if y not in ('PRP$', 'VBZ','POS', 'DT', 'VBD','CD', '.', ',',':', ')', '(' )]
-            
-            for word in title:
-                try:
-                    index = labeltitle.index(word.lower())
-                except:
-                    index = None
-                if index:
-                    datatitle[index]+=1
-                else:
-                    labeltitle.append(word.lower())
-                    datatitle.append(1)
-    lis = [(datatitle[i], labeltitle[i]) for i in range(len(datatitle))]
-    datatitle.sort()
-    labeltitle = [x[1] for i in range(len(datatitle)) for x in lis if x[0] == i]
-    # datatitle, labeltitle = zip(*sorted(zip(datatitle, labeltitle)))
-    datatitle=datatitle[::-1] #reverse list
-    labeltitle=labeltitle[::-1] #reverse list
-    return labeltitle, datatitle
-    
-
 def setCoAuthor(request, profile):
      if request.is_ajax():
         idAuthor = request.POST.get('id')
@@ -189,13 +123,14 @@ def setCoAuthor(request, profile):
 @login_required
 def profile(request):
     profile = UserProfile.objects.get(user = request.user)
+
     res_word_cloud = word_cloud.delay(profile.user.id)
     result_word_cloud = AsyncResult(res_word_cloud.id)
     labeltitle,datatitle = result_word_cloud.get()
+
     res_citations = get_citations.delay(profile.user.id)
     result_citations = AsyncResult(res_citations.id)
     labels, data,totalCitations,totalCitationsSince = result_citations.get()
-
 
     profilelist = UserProfile.objects.all()
     articles = Article.objects.filter(user = request.user)
@@ -271,12 +206,15 @@ def listprofile(request):
 
 def profiledetail(request, profile_pk):
     profile = UserProfile.objects.get(id = profile_pk)
+
     res_word_cloud = word_cloud.delay(profile.user.id)
     result_word_cloud = AsyncResult(res_word_cloud.id)
     labeltitle,datatitle = result_word_cloud.get()
+    
     res_citations = get_citations.delay(profile.user.id)
     result_citations = AsyncResult(res_citations.id)
     labels, data,totalCitations,totalCitationsSince = result_citations.get()
+    
     articles = Article.objects.filter(user = profile.user)
     authorlist = CoAuthor.objects.filter(author = profile)
     paginator = Paginator(articles, 15)
