@@ -31,6 +31,7 @@ def article(request):
         except:
             getTitle = None 
         if getTitle:
+            articles = Article.objects.filter(Q(title__icontains=getTitle) | Q(author__icontains=getTitle))
             keyword_research(getTitle)
         paginator = Paginator(articles, 15)
         pageNumber = request.GET.get('page',1)
