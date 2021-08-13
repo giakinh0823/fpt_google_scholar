@@ -26,6 +26,6 @@ def debug_task(self):
 app.conf.beat_schedule = {
     'get-data': {
         'task': 'get_data',
-        'schedule': crontab(minute='34', hour="3"),
+        'schedule': crontab(minute='27', hour="11"),
     },
 }

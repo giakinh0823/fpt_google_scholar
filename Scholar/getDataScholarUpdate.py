@@ -139,9 +139,9 @@ def data_profile(link):
             if profile == None and "FPT University" in list_of_Affiliation[index] :
                 # print("Set data")
                 try:
-                    user = User.objects.create(username = slugify(fix_encoding(list_of_name[index])+f"{get_random_string(6)}"), password="123456")
+                    user = User.objects.create(username = slugify(fix_encoding(list_of_link[index]).replace("https://scholar.google.com/citations?hl=en&user=", "")), password="123456")
                 except:
-                    user = User.objects.create(username = slugify(fix_encoding(list_of_name[index]+f"{get_random_string(6)}")), password="123456")
+                    user = User.objects.create(username = slugify(fix_encoding(list_of_link[index]+f"{get_random_string(2)}")), password="123456")
                 user.save()
                 profile = UserProfile(user = user ,name=fix_encoding(list_of_name[index]),Affiliation =fix_encoding(list_of_Affiliation[index]),EmailForVerification = fix_encoding(list_of_EmailForVerification[index]), homepage = list_of_link[index])
                 img_url = list_of_avatar[index]
@@ -323,13 +323,9 @@ def data_scrap(link,userId):
         try:
             newarticle = Article.objects.get(user = user, 
                              title = fix_encoding(list_of_articles[index]), 
-                             author=fix_encoding(list_of_authors[index]), 
-                             total_citations=list_of_citation[index],
-                             year=getyear,
-                             url=list_of_pdf[index],)
+                             author=fix_encoding(list_of_authors[index]))
         except:
             newarticle=None
-        print(newarticle)
         if newarticle==None:
             newarticle = Article(user = user, 
                              title = fix_encoding(list_of_articles[index]), 

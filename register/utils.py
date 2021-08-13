@@ -37,6 +37,7 @@ def word_cloud(userId):
     labeltitle = [x[1] for i in range(len(datatitle)) for x in list if x[0] == i]
     datatitle=datatitle[::-1] 
     labeltitle=labeltitle[::-1] 
+    print(labeltitle)
     return labeltitle, datatitle
 
 
