@@ -225,7 +225,10 @@ def data_scrap(link,userId):
     index = 0
     
     for button in list_link:
-        driver.get(button)
+        try:
+            driver.get(button)
+        except:
+            continue
         time.sleep(3)
 
         htmlSource = driver.page_source
